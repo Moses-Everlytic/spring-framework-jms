@@ -25,19 +25,21 @@ public class HelloSender {
     private final JmsTemplate jmsTemplate;
     private final ObjectMapper objectMapper;
 
-    @Scheduled(fixedRate = 4000)
-    public void sendMessage() {
+    @Scheduled(fixedRate = 2000)
+    public void sendMessage(){
+
         HelloWorldMessage message = HelloWorldMessage
                 .builder()
                 .id(UUID.randomUUID())
-                .message("Are we live yet?")
+                .message("Hello World!")
                 .build();
 
         jmsTemplate.convertAndSend(JmsConfig.MY_QUEUE, message);
+
     }
 
-    @Scheduled(fixedRate = 4000)
-    public void sendAndReplyMessage() throws JMSException {
+    @Scheduled(fixedRate = 2000)
+    public void sendandReceiveMessage() throws JMSException {
 
         HelloWorldMessage message = HelloWorldMessage
                 .builder()
@@ -45,26 +47,26 @@ public class HelloSender {
                 .message("Hello")
                 .build();
 
-        Message recievedMsg = jmsTemplate.sendAndReceive(JmsConfig.MY_HELLO_QUEUE, new MessageCreator(){
-
+        Message receviedMsg = jmsTemplate.sendAndReceive(JmsConfig.MY_SEND_RCV_QUEUE, new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
-                Message helloMsg = null;
+                Message helloMessage = null;
 
                 try {
-                    helloMsg = session.createTextMessage(objectMapper.writeValueAsString(message));
-                    helloMsg.setStringProperty("_type", "com.nexstudio.nxsjms.model.HelloWorldMessage");
+                    helloMessage = session.createTextMessage(objectMapper.writeValueAsString(message));
+                    helloMessage.setStringProperty("_type", "com.nexstudio.nxsjms.model.HelloWorldMessage");
 
                     System.out.println("Sending Hello");
-    
-                    return helloMsg;
+
+                    return helloMessage;
+
                 } catch (JsonProcessingException e) {
-                    throw new JMSException("boom"); 
+                   throw new JMSException("boom");
                 }
             }
-            
         });
 
-        System.out.println(recievedMsg.getBody(String.class));
+        System.out.println(receviedMsg.getBody(String.class));
+
     }
 }

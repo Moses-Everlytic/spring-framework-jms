@@ -22,30 +22,32 @@ import lombok.RequiredArgsConstructor;
 public class HelloWorldListener {
 
     private final JmsTemplate jmsTemplate;
-    
+
     @JmsListener(destination = JmsConfig.MY_QUEUE)
-    public void listener(
-            @Payload HelloWorldMessage helloWorldMessage, 
-            @Headers MessageHeaders messageHeaders, 
-            Message message
-    ){
-        // System.out.println("Message Recieved");
-        // System.out.println(helloWorldMessage);
+    public void listen(@Payload HelloWorldMessage helloWorldMessage,
+                       @Headers MessageHeaders headers, Message message){
+
+        //System.out.println("I Got a Message!!!!!");
+
+       // System.out.println(helloWorldMessage);
+
+
+        // uncomment and view to see retry count in debugger
+       // throw new RuntimeException("foo");
+
     }
 
-    @JmsListener(destination = JmsConfig.MY_HELLO_QUEUE)
-    public void listenerForHello(
-            @Payload HelloWorldMessage helloWorldMessage, 
-            @Headers MessageHeaders messageHeaders, 
-            Message message
-    ) throws JMSException{
+    @JmsListener(destination = JmsConfig.MY_SEND_RCV_QUEUE)
+    public void listenForHello(@Payload HelloWorldMessage helloWorldMessage,
+                       @Headers MessageHeaders headers, Message message) throws JMSException {
 
-        HelloWorldMessage payLoadMsg = HelloWorldMessage
+        HelloWorldMessage payloadMsg = HelloWorldMessage
                 .builder()
                 .id(UUID.randomUUID())
                 .message("World!!")
                 .build();
 
-        jmsTemplate.convertAndSend(message.getJMSReplyTo(), payLoadMsg);
+        jmsTemplate.convertAndSend(message.getJMSReplyTo(), payloadMsg);
+
     }
 }
